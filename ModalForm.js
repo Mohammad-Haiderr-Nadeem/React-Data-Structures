@@ -18,29 +18,18 @@ const style = {
 export default function ModalForm(props) {
 
   const handleOnChangeComment  = (e) => {
-    handleSetComment(e.target.value);
+    props.setComment(e.target.value);
   }
 
   const handleOnChangeColor = (e) => {
-    handleSetColor(e.target.value);
-  }
-
-  const handleSetColor = (data) => {
-    props.setColor(data);
-  }
-
-  const handleSetComment = (data) => {
-    props.setComment(data);
+    props.setColor(e.target.value);
   }
 
   const handleOnClickOk = () => {
-    console.log('handleOnClick com: ', props.comment);
-    console.log('handleOnClick col: ', props.color);
     const data = {
       id: props.paramsData,
       comment: props.comment,
       color: props.color,
-      remove: false,
     };
     props.handleSave(data);
   };

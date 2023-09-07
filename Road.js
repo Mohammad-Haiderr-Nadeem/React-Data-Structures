@@ -48,14 +48,10 @@ export default function Road() {
                 col3: roadwork.description, 
                 col4: roadwork.coordinate.lat + ' ' + roadwork.coordinate.long,
             }));
-            handleSetDetails(formattedRoadworks);
+            setDetails(formattedRoadworks);
         } catch(err){
             console.log('error in fetching apiData', err);
         }    
-    };
-
-    const handleSetDetails = (formattedRoadworks) => {
-        setDetails(formattedRoadworks);
     };
 
     const handleAction = (params) => {
