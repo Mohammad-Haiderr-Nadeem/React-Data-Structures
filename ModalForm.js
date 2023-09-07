@@ -34,21 +34,19 @@ export default function ModalForm(props) {
   }
 
   const handleOnClickOk = () => {
-    console.log('props.selectedRowIndex', props.selectedRowIndex);
-    console.log('props.comment', props.comment);
-    console.log('props.color', props.color);
+    console.log('handleOnClick com: ', props.comment);
+    console.log('handleOnClick col: ', props.color);
     const data = {
-      id: props.selectedRowIndex,
-      com: props.comment,
-      col: props.color,
+      id: props.paramsData,
+      comment: props.comment,
+      color: props.color,
+      remove: false,
     };
-    props.setRowData(data);
     props.handleSave(data);
   };
 
   return (
     <main>
-      {}
       <Modal
         open={props.open}
         onClose={() => props.setOpen(false)}
@@ -101,5 +99,3 @@ export default function ModalForm(props) {
     </main>
   );
 }
-
-

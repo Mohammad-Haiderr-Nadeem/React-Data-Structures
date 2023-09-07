@@ -12,37 +12,15 @@ export default function Road() {
     const [openView, setOpenView] = useState(false);
     const [selectedRowIndex, setSelectedRowIndex] = useState(null);
     const [details, setDetails] = useState([]);
-    const [favoriteRows, setFavoriteRows] = useState(new Set());
     const [viewClicked, setViewClicked] = useState(false);
-    const [comment, setComment] = useState();
+    const [comment, setComment] = useState('');
     const [color, setColor] = useState('');
-    const [rowData, setRowData] = useState({});
-
-    // useEffect(() => {
-    //     if (selectedRowIndex !== rowData.id) {
-    //     setRowData({
-    //         id: selectedRowIndex,
-    //         com: "",
-    //         col: "",
-    //     });
-    //     }
-    // }, [selectedRowIndex,rowData.id]);
-
-    useEffect(() => {
-        if (selectedRowIndex !== null) {
-            console.log('details', details);
-        const rowData = details.find(row => row?.id === selectedRowIndex);
-        if (rowData) {
-            setComment(rowData.com || "");
-            setColor(rowData.col || "");
-        } 
-        }
-    }, [selectedRowIndex, details]);
-
-    
+    const [rowData, setRowData] = useState([]);
+    const [paramsData, setParamsData] = useState();
+   
     useEffect(() => {
         fetchRows();
-    }, [details]);
+    }, [details, rowData]);
 
     const fetchRows = async () => {
         try {
@@ -55,7 +33,7 @@ export default function Road() {
         } catch (err) {
             console.log('error in fetching apiData', err);
         }
-    }
+    };
 
     const handleView = async (params) => {
         setOpenView(true);
@@ -74,27 +52,17 @@ export default function Road() {
         } catch(err){
             console.log('error in fetching apiData', err);
         }    
-    }
+    };
 
     const handleSetDetails = (formattedRoadworks) => {
         setDetails(formattedRoadworks);
-    }
+    };
 
     const handleAction = (params) => {
-        const rowId = params.row.id;
-        setColor('');
-        setComment('');
-        if (favoriteRows.has(rowId)) {
-          favoriteRows.delete(rowId);
-        } else {
-          favoriteRows.add(rowId);
-        }
-        setFavoriteRows(new Set(favoriteRows));
+        const id = params.row.col1;
+        const data = {id, comment: '', color: ''};
+        setRowData([...rowData, data]);
     };  
-
-    const handleEdit = () => {
-        setOpen(true);
-    };
 
     const ViewButton = (params) => {
         return (
@@ -103,29 +71,54 @@ export default function Road() {
     };
 
     const ActionButton = (params) => {
-        const rowId = params.row.id;
-        if(favoriteRows.has(rowId)){
-          return(
+        const id =  params.row.col1;
+        const isFavorite = rowData.find((data) => data.id === id)
+       
+        const handleEditClick = () => {
+            setParamsData(params.row.col1);
+            const editData = rowData.find((data) => data.id === params.row.col1);
+            if(editData.comment !== '' || editData.color !== ''){
+                setComment(editData.comment);
+                setColor(editData.color);
+            }else {
+                setComment('');
+                setColor('');
+            }
+            setOpen(true);
+        };
+
+        const handleRemoveClick = () => {
+            setParamsData(params.row.col1);
+            const updatedArray = rowData.filter((row) => {
+                return row.id !== params.row.col1
+            });
+            setRowData(updatedArray);
+        }; 
+        if (isFavorite) {
+          return (
             <div className={styles.displayButtons}>
-              <Button name={'Remove'} handleOnClick={() => handleAction(params)}/>
-              <Button name={'Edit'} handleOnClick={handleEdit} />
+              <Button name={'Remove'} handleOnClick={handleRemoveClick} />
+              <Button name={'Edit'} handleOnClick={handleEditClick} />
             </div>
           );
-        } else{
-          return(
+        } else {
+          return (
             <Button name={'Add to favorite'} handleOnClick={() => handleAction(params)} />
           );
         }
     };
-  
-    const handleSave = (data) => {
-        const updatedRows = [...details];
-        const rowIndex = selectedRowIndex - 1;
-        updatedRows[rowIndex] = { ...updatedRows[rowIndex], ...data };
-        setDetails(updatedRows);
+    
+    const handleSave = (val) => {
+        const updatedArray = rowData.map((row) => {
+            if(row.id === val.id){
+                return val;
+            }
+            return row;
+        });
+        setRowData(updatedArray);
         setOpen(false);
     };
-
+    
     const columns = [
         { field: 'col1', headerName: 'Road name', width: 500 },
         { field: 'col2', headerName: 'Road Works', width: 500, renderCell: ViewButton },
@@ -142,18 +135,16 @@ export default function Road() {
     return (
         <main>
             <ModalForm
-            open={open}
-            setOpen={setOpen}
-            rows={details}
-            selectedRowIndex={selectedRowIndex}
-            handleSave={handleSave}
-            comment={comment}
-            setComment={setComment}
-            setColor={setColor}
-            color={color}
-            rowData={rowData}
-            setRowData={setRowData}
-            setDetails={setDetails}
+                open={open}
+                setOpen={setOpen}
+                paramsData={paramsData}
+                handleSave={handleSave}
+                rowData={rowData[selectedRowIndex]}
+                comment={comment}
+                setComment={setComment}
+                setColor={setColor}
+                color={color}
+                setRowData={setRowData}
             />
             {viewClicked && (
                 <RoadDetails
@@ -163,7 +154,6 @@ export default function Road() {
                 columns={innerColumns}
                 />
             )}
-            
             <div style={{ height: 800, width: '100%' }}>
                 <DataGrid
                     rows={rows}
